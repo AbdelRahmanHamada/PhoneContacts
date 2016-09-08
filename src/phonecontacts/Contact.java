@@ -5,18 +5,25 @@
  */
 package phonecontacts;
 
+import java.util.List;
+
 /**
  *
  * @author abed
  */
 public class Contact {
+
     private String name;
-    private String[] phones;
+    private List<String> phones;
 
     public Contact() {
     }
 
-    public Contact(String name, String[] phones) {
+    public Contact(String name) {
+        this.name = name;
+    }
+
+    public Contact(String name, List<String> phones) {
         this.name = name;
         this.phones = phones;
     }
@@ -29,14 +36,12 @@ public class Contact {
         this.name = name;
     }
 
-    public String[] getPhones() {
+    public List<String> getPhones() {
         return phones;
     }
 
-    public void setPhones(String[] phones) {
+    public void setPhones(List<String> phones) {
         this.phones = phones;
     }
-    
-    
-    
+
 }

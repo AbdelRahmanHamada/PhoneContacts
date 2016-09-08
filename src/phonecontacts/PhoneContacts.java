@@ -15,7 +15,9 @@ public class PhoneContacts {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        String s = "TEL;CELL:0598332547";
+        System.out.println(s.matches(".*(TEL|CELL).*"));
+
     }
-    
+
 }
