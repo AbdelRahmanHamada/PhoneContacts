@@ -63,4 +63,8 @@ public class ContactFolderProcessing {
         return fileName.substring(0, fileName.indexOf(".vcf"));
     }
 
+    public List<Contact> getContacts() {
+        return contacts;
+    }
+
 }

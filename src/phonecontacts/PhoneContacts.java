@@ -5,6 +5,9 @@
  */
 package phonecontacts;
 
+import java.io.File;
+import java.util.List;
+
 /**
  *
  * @author abed
@@ -15,9 +18,13 @@ public class PhoneContacts {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String s = "TEL;CELL:0598332547";
-        System.out.println(s.matches(".*(TEL|CELL).*"));
-
+        ContactFolderProcessing contactFolder = new ContactFolderProcessing(
+                new File("path"));
+        List<Contact> contacts = contactFolder.getContacts();
+        contacts.forEach(contact -> {
+            System.out.println(contact.getName() + ":");
+            System.out.println("\t" + contact.getPhones());
+        });
     }
 
 }
