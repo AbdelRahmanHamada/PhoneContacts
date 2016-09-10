@@ -8,25 +8,31 @@ package phonecontacts;
 import java.io.File;
 import java.util.List;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
  *
  * @author abed
  */
 public class PhoneContacts extends Application {
+
+    private File folder;
+    private ObservableList<Contact> addedList;
+    private ObservableList<Contact> nonAddedList;
 
     private ListView<Contact> added;
     private ListView<Contact> nonAdded;
@@ -57,8 +63,10 @@ public class PhoneContacts extends Application {
         dirChooser = new DirectoryChooser();
         initPathBox();
         initListBox();
+        bindLists();
         initProcessBox();
         initContainer();
+        initActions();
     }
 
     private void initPathBox() {
@@ -71,9 +79,30 @@ public class PhoneContacts extends Application {
 
     private void initListBox() {
         added = new ListView<>();
+        Callback callback = param -> new ListCell<Contact>() {
+            @Override
+            protected void updateItem(Contact item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null || item.getName() == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName());
+                }
+            }
+        };
+        added.setCellFactory(callback);
         nonAdded = new ListView<>();
+        nonAdded.setCellFactory(callback);
         hboxList = new HBox(15, nonAdded, added);
 
+    }
+
+    private void bindLists() {
+        addedList = FXCollections.observableArrayList();
+        nonAddedList = FXCollections.observableArrayList();
+        added.setItems(addedList);
+        nonAdded.setItems(nonAddedList);
     }
 
     private void initProcessBox() {
@@ -88,6 +117,30 @@ public class PhoneContacts extends Application {
         vbox = new VBox(15, hboxPath, hboxList, hboxProcess);
         vbox.setAlignment(Pos.CENTER);
         vbox.setPadding(new Insets(15));
+    }
+
+    private void initActions() {
+        btnChoose.setOnAction(e -> {
+            folder = dirChooser.showDialog(new Stage());
+            tfPath.setText(folder.getPath());
+        });
+
+        btnProcess.setOnAction(e -> {
+            if (folder != null) {
+                ContactFolderProcessing contactFolder = new ContactFolderProcessing(folder);
+                List<Contact> contacts = contactFolder.getContacts();
+                nonAddedList.setAll(contacts);
+            } else {
+                textArea.setText("please choose folder directory....");
+            }
+        });
+        nonAdded.setOnMouseClicked(e -> {
+            if (e.getClickCount() > 1) {
+                nonAddedList.remove(nonAdded.getSelectionModel().getSelectedItem());
+                addedList.add(nonAdded.getSelectionModel().getSelectedItem());
+            }
+        });
+
     }
 
     /**
@@ -106,4 +159,5 @@ public class PhoneContacts extends Application {
             System.out.println("\t" + contact.getPhones());
         });
     }
+
 }
