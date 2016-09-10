@@ -45,31 +45,49 @@ public class PhoneContacts extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        dirChooser = new DirectoryChooser();
-
-        tfPath = new TextField();
-        tfPath.setMinWidth(450);
-        btnChoose = new Button("choose");
-        hboxPath = new HBox(10, tfPath, btnChoose);
-
-        added = new ListView<>();
-        nonAdded = new ListView<>();
-        hboxList = new HBox(15, nonAdded, added);
-
-        textArea = new TextArea();
-        btnProcess = new Button("start");
-        btnProcess.setMinWidth(80);
-        hboxProcess = new HBox(10, textArea, btnProcess);
-
-        vbox = new VBox(15, hboxPath, hboxList, hboxProcess);
-        vbox.setAlignment(Pos.CENTER);
-        vbox.setPadding(new Insets(15));
-
         Scene scene = new Scene(vbox, 600, 400);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Testing");
         primaryStage.show();
 
+    }
+
+    @Override
+    public void init() {
+        dirChooser = new DirectoryChooser();
+        initPathBox();
+        initListBox();
+        initProcessBox();
+        initContainer();
+    }
+
+    private void initPathBox() {
+        tfPath = new TextField();
+        tfPath.setMinWidth(450);
+        btnChoose = new Button("choose");
+        hboxPath = new HBox(10, tfPath, btnChoose);
+
+    }
+
+    private void initListBox() {
+        added = new ListView<>();
+        nonAdded = new ListView<>();
+        hboxList = new HBox(15, nonAdded, added);
+
+    }
+
+    private void initProcessBox() {
+        textArea = new TextArea();
+        btnProcess = new Button("start");
+        btnProcess.setMinWidth(80);
+        hboxProcess = new HBox(10, textArea, btnProcess);
+
+    }
+
+    public void initContainer() {
+        vbox = new VBox(15, hboxPath, hboxList, hboxProcess);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setPadding(new Insets(15));
     }
 
     /**
