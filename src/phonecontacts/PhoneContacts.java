@@ -24,7 +24,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -47,7 +46,7 @@ public class PhoneContacts extends Application {
     private Button btnRemove;
     private HBox hboxList;
 
-    private FileChooser dirChooser;
+    private DirectoryChooser dirChooser;
     private TextField tfPath;
     private Button btnChoose;
 
@@ -72,7 +71,7 @@ public class PhoneContacts extends Application {
 
     @Override
     public void init() {
-        dirChooser = new FileChooser();
+        dirChooser = new DirectoryChooser();
         initPathBox();
         initListBox();
         bindLists();
@@ -147,7 +146,7 @@ public class PhoneContacts extends Application {
     private void initActions() {
         btnChoose.setOnAction(e -> {
 
-            folder = dirChooser.showOpenDialog(new Stage());
+            folder = dirChooser.showDialog(new Stage());
             if (folder != null) {
                 tfPath.setText(folder.getPath());
             }
