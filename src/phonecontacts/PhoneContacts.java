@@ -6,6 +6,7 @@
 package phonecontacts;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -14,13 +15,17 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -36,9 +41,13 @@ public class PhoneContacts extends Application {
 
     private ListView<Contact> added;
     private ListView<Contact> nonAdded;
+    private Label addedCount;
+    private Label nonAddedCount;
+    private Button btnAdd;
+    private Button btnRemove;
     private HBox hboxList;
 
-    private DirectoryChooser dirChooser;
+    private FileChooser dirChooser;
     private TextField tfPath;
     private Button btnChoose;
 
@@ -48,9 +57,12 @@ public class PhoneContacts extends Application {
     private TextArea textArea;
     private Button btnProcess;
     private HBox hboxProcess;
+    private Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        this.primaryStage = primaryStage;
+
         Scene scene = new Scene(vbox, 600, 400);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Testing");
@@ -60,7 +72,7 @@ public class PhoneContacts extends Application {
 
     @Override
     public void init() {
-        dirChooser = new DirectoryChooser();
+        dirChooser = new FileChooser();
         initPathBox();
         initListBox();
         bindLists();
@@ -79,6 +91,7 @@ public class PhoneContacts extends Application {
 
     private void initListBox() {
         added = new ListView<>();
+        added.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         Callback callback = param -> new ListCell<Contact>() {
             @Override
             protected void updateItem(Contact item, boolean empty) {
@@ -92,9 +105,20 @@ public class PhoneContacts extends Application {
             }
         };
         added.setCellFactory(callback);
+
         nonAdded = new ListView<>();
+        nonAdded.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         nonAdded.setCellFactory(callback);
-        hboxList = new HBox(15, nonAdded, added);
+
+        addedCount = new Label(0 + "");
+        nonAddedCount = new Label(0 + "");
+
+        btnAdd = new Button(">>");
+        btnRemove = new Button("<<");
+
+        VBox vbox = new VBox(20, nonAddedCount, btnAdd, btnRemove, addedCount);
+        vbox.setAlignment(Pos.CENTER);
+        hboxList = new HBox(15, nonAdded, vbox, added);
 
     }
 
@@ -107,6 +131,7 @@ public class PhoneContacts extends Application {
 
     private void initProcessBox() {
         textArea = new TextArea();
+        textArea.setWrapText(true);
         btnProcess = new Button("start");
         btnProcess.setMinWidth(80);
         hboxProcess = new HBox(10, textArea, btnProcess);
@@ -121,11 +146,12 @@ public class PhoneContacts extends Application {
 
     private void initActions() {
         btnChoose.setOnAction(e -> {
-            folder = dirChooser.showDialog(new Stage());
-            tfPath.setText(folder.getPath());
-        });
 
-        btnProcess.setOnAction(e -> {
+            folder = dirChooser.showOpenDialog(new Stage());
+            if (folder != null) {
+                tfPath.setText(folder.getPath());
+            }
+
             if (folder != null) {
                 ContactFolderProcessing contactFolder = new ContactFolderProcessing(folder);
                 List<Contact> contacts = contactFolder.getContacts();
@@ -133,11 +159,66 @@ public class PhoneContacts extends Application {
             } else {
                 textArea.setText("please choose folder directory....");
             }
+
+        });
+
+        btnProcess.setOnAction(e -> {
+
+            StringBuilder sb = new StringBuilder();
+            for (Contact c : addedList) {
+                List<String> phones = c.getPhones();
+                if (c.getPhones().size() > 1) {
+                    Stage stage = new Stage();
+                    stage.initModality(Modality.WINDOW_MODAL);
+                    stage.initOwner(primaryStage);
+                    ChoosePhoneDialog ch = new ChoosePhoneDialog(c);
+                    ch.start(stage);
+                    phones = ch.getPhones();
+                }
+
+                List<String> newPhones = new ArrayList<>();
+                for (String phone : phones) {
+                    newPhones.add(phone);
+                    if (!phone.startsWith("059")) {
+                        newPhones.remove(phone);
+                        if (phone.startsWith("082")) {
+                        } else if (phone.startsWith("+97")) {
+                            phone = "0" + phone.substring(4);
+                            newPhones.add(phone);
+                        } else {
+                            phone = "059" + phone;
+                            newPhones.add(phone);
+                        }
+
+                    }
+                }
+                for (String phone : newPhones) {
+                    sb.append(phone).append(";");
+                }
+            }
+            textArea.setText(sb.toString());
+        });
+
+        btnAdd.setOnAction(e -> {
+            ObservableList<Contact> list = nonAdded.getSelectionModel().getSelectedItems();
+            addedList.addAll(list);
+            nonAddedList.removeAll(list);
+            addedCount.setText(addedList.size() + "");
+            nonAddedCount.setText(nonAddedList.size() + "");
+        });
+        btnRemove.setOnAction(e -> {
+            ObservableList<Contact> list = added.getSelectionModel().getSelectedItems();
+            nonAddedList.addAll(list);
+            addedList.removeAll(list);
+            addedCount.setText(addedList.size() + "");
+            nonAddedCount.setText(nonAddedList.size() + "");
         });
         nonAdded.setOnMouseClicked(e -> {
-            if (e.getClickCount() > 1) {
-                nonAddedList.remove(nonAdded.getSelectionModel().getSelectedItem());
+            if (e.getClickCount() == 2) {
                 addedList.add(nonAdded.getSelectionModel().getSelectedItem());
+                nonAddedList.remove(nonAdded.getSelectionModel().getSelectedItem());
+                addedCount.setText(addedList.size() + "");
+                nonAddedCount.setText(nonAddedList.size() + "");
             }
         });
 
